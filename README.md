@@ -8,8 +8,9 @@ A two-player number guessing game built with React, TypeScript, and Chakra UI.
 
 ### Option 1: Play Online (Easiest)
 
-⚠️ **Note:** The online version will be available after the first successful deployment at:
-[https://volkanbatur.github.io/number-crunch](https://volkanbatur.github.io/number-crunch)
+Visit our web version at: [https://volkanbatur.github.io/number-crunch-game](https://volkanbatur.github.io/number-crunch-game)
+
+⚠️ **Note:** If you see a white screen, try clearing your browser cache or waiting a few minutes for the deployment to complete.
 
 To deploy the game:
 1. Go to your GitHub repository
