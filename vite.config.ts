@@ -11,7 +11,7 @@ export default defineConfig({
       }
     })
   ],
-  base: '/number-crunch/',
+  base: '/number-crunch-game/',
   server: {
     port: 3000,
   },
