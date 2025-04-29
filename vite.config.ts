@@ -3,15 +3,8 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react({
-      jsxImportSource: '@emotion/react',
-      babel: {
-        plugins: ['@emotion/babel-plugin']
-      }
-    })
-  ],
-  base: '/number-crunch-game/',
+  plugins: [react()],
+  base: '/number-crunch/',
   server: {
     port: 3000,
   },

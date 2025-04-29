@@ -45,15 +45,17 @@ const initialPlayers: Record<Player, PlayerState> = {
     name: 'Player 1',
     icon: '👤',
     guesses: [],
-    discoveredDigits: {},
+    discoveredDigits: {} as Record<string, boolean>,
     state: GameState.SETUP,
+    secretNumber: ''
   },
   '2': {
     name: 'Player 2',
     icon: '👤',
     guesses: [],
-    discoveredDigits: {},
+    discoveredDigits: {} as Record<string, boolean>,
     state: GameState.SETUP,
+    secretNumber: ''
   }
 };
 
@@ -87,11 +89,11 @@ export function App() {
       ...prev,
       '1': {
         ...prev['1'],
-        state: 'PLAYING' as GameState
+        state: GameState.PLAYING
       },
       '2': {
         ...prev['2'],
-        state: 'PLAYING' as GameState
+        state: GameState.PLAYING
       }
     }));
   };
@@ -126,74 +128,72 @@ export function App() {
   };
 
   const handleGuess = (player: Player, guess: string) => {
-    const targetPlayer: Player = player === '1' ? '2' : '1';
-    const target = players[targetPlayer].secretNumber;
-    
-    if (!target) return; // Early return if target is undefined
-    
-    const positions: boolean[] = new Array(6).fill(false);
-    const usedTargetPositions = new Array(6).fill(false);
-    const usedGuessPositions = new Array(6).fill(false);
-    let resultString = '';
-
-    // First pass: check for exact matches
-    for (let i = 0; i < 6; i++) {
-      if (guess[i] === target[i]) {
-        positions[i] = true;
-        usedTargetPositions[i] = true;
-        usedGuessPositions[i] = true;
-        resultString += '+';
+    setPlayers(prev => {
+      const currentPlayer = prev[player];
+      const target = currentPlayer.secretNumber;
+      
+      if (!target) {
+        return prev; // Early return if target is undefined
       }
-    }
 
-    // Second pass: check for correct digits in wrong positions
-    for (let i = 0; i < 6; i++) {
-      if (!usedGuessPositions[i]) {
-        for (let j = 0; j < 6; j++) {
-          if (!usedTargetPositions[j] && guess[i] === target[j]) {
-            usedTargetPositions[j] = true;
-            usedGuessPositions[i] = true;
-            resultString += '-';
-            break;
+      // Initialize arrays to track used positions
+      const usedTargetPositions = new Array(6).fill(false);
+      const usedGuessPositions = new Array(6).fill(false);
+      
+      // First pass: Find exact matches
+      const positions = new Array(6).fill(false);
+      let resultString = '';
+      
+      for (let i = 0; i < 6; i++) {
+        if (guess[i] === target[i]) {
+          positions[i] = true;
+          usedTargetPositions[i] = true;
+          usedGuessPositions[i] = true;
+          resultString += '+';
+        }
+      }
+      
+      // Second pass: Find misplaced digits
+      for (let i = 0; i < 6; i++) {
+        if (!usedGuessPositions[i]) {
+          for (let j = 0; j < 6; j++) {
+            if (!usedTargetPositions[j] && guess[i] === target[j]) {
+              usedTargetPositions[j] = true;
+              usedGuessPositions[i] = true;
+              resultString += '-';
+              break;
+            }
           }
         }
       }
-    }
 
-    const newGuess: GuessResult = {
-      guess,
-      result: resultString,
-      positions,
-      timestamp: Date.now()
-    };
-
-    const newDiscoveredDigits = { ...players[player].discoveredDigits };
-    for (let i = 0; i < 6; i++) {
-      if (positions[i]) {
-        newDiscoveredDigits[guess[i]] = true;
+      // Update discovered digits
+      const newDiscoveredDigits = { ...currentPlayer.discoveredDigits };
+      for (let i = 0; i < 6; i++) {
+        if (positions[i]) {
+          newDiscoveredDigits[guess[i]] = true;
+        }
       }
-    }
 
-    setPlayers(prev => ({
-      ...prev,
-      [player]: {
-        ...prev[player],
-        guesses: [...prev[player].guesses, newGuess],
-        discoveredDigits: newDiscoveredDigits,
-        state: resultString === '++++++' ? GameState.FINISHED : prev[player].state
-      }
-    }));
+      const newGuess: GuessData = {
+        guess,
+        result: resultString,
+        positions,
+        timestamp: Date.now()
+      };
 
-    if (resultString === '++++++') {
-      toast({
-        title: `${players[player].name} wins!`,
-        description: `Congratulations! You found the number in ${players[player].guesses.length + 1} guesses!`,
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-      setGameState(GameState.FINISHED);
-    }
+      const newState = resultString === '++++++' ? GameState.FINISHED : currentPlayer.state;
+
+      return {
+        ...prev,
+        [player]: {
+          ...currentPlayer,
+          guesses: [...currentPlayer.guesses, newGuess],
+          discoveredDigits: newDiscoveredDigits,
+          state: newState
+        }
+      };
+    });
   };
 
   const handlePlayerNumberSubmit = (player: Player, number: string) => {
@@ -329,13 +329,13 @@ export function App() {
       '1': {
         ...prev['1'],
         guesses: [],
-        discoveredDigits: {},
+        discoveredDigits: {} as Record<string, boolean>,
         state: GameState.SETUP
       },
       '2': {
         ...prev['2'],
         guesses: [],
-        discoveredDigits: {},
+        discoveredDigits: {} as Record<string, boolean>,
         state: GameState.SETUP
       }
     }));
