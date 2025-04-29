@@ -1,5 +1,20 @@
 import React from 'react';
-import { ChakraProvider, Box, VStack, Heading, Text, Button, useMediaQuery, Progress } from '@chakra-ui/react';
+import { 
+  ChakraProvider, 
+  Box, 
+  VStack, 
+  Heading, 
+  Text, 
+  Button, 
+  useMediaQuery, 
+  Progress, 
+  Select,
+  Grid,
+  GridItem,
+  HStack,
+  IconButton,
+  Tooltip
+} from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import GameBoard from './components/GameBoard';
 import NumberInput from './components/NumberInput';
@@ -15,6 +30,14 @@ interface GuessHistory {
   discoveredPositions: { [position: number]: string };
 }
 
+const FRUIT_ICONS = [
+  { emoji: '🍎', name: 'Apple' },
+  { emoji: '🍌', name: 'Banana' },
+  { emoji: '🍇', name: 'Grapes' },
+  { emoji: '🍊', name: 'Orange' },
+  { emoji: '🍓', name: 'Strawberry' }
+];
+
 function App() {
   const [isMobile] = useMediaQuery("(max-width: 768px)");
   const [gameState, setGameState] = useState<GameState>('SETUP');
@@ -26,7 +49,10 @@ function App() {
   const [gameResult, setGameResult] = useState<Player | null>(null);
   const [player1DiscoveredDigits, setPlayer1DiscoveredDigits] = useState<{ [position: number]: string }>({});
   const [player2DiscoveredDigits, setPlayer2DiscoveredDigits] = useState<{ [position: number]: string }>({});
+  const [timeLimit, setTimeLimit] = useState<number>(30);
   const [timeLeft, setTimeLeft] = useState<number>(30);
+  const [player1Icon, setPlayer1Icon] = useState<string>('');
+  const [player2Icon, setPlayer2Icon] = useState<string>('');
 
   useEffect(() => {
     if (gameState === 'SETUP') {
@@ -37,9 +63,11 @@ function App() {
       setGameResult(null);
       setPlayer1DiscoveredDigits({});
       setPlayer2DiscoveredDigits({});
-      setTimeLeft(30);
+      setTimeLeft(timeLimit);
+      setPlayer1Icon('');
+      setPlayer2Icon('');
     }
-  }, [gameState]);
+  }, [gameState, timeLimit]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -49,19 +77,25 @@ function App() {
           if (prev <= 1) {
             // Time's up - submit default guess
             handleGuess('123456');
-            return 30;
+            return timeLimit;
           }
           return prev - 1;
         });
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [gameState, currentPlayer, gameResult]);
+  }, [gameState, currentPlayer, gameResult, timeLimit]);
 
   const handlePlayerNumberSubmit = (player: Player, number: string) => {
     if (player === 1) {
+      if (!player1Icon) {
+        return; // Don't allow number submission without icon selection
+      }
       setPlayer1Number(number);
     } else {
+      if (!player2Icon) {
+        return; // Don't allow number submission without icon selection
+      }
       setPlayer2Number(number);
       setGameState('PLAYING');
     }
@@ -116,9 +150,51 @@ function App() {
       setGameResult(currentPlayer);
     } else {
       setCurrentPlayer(current => current === 1 ? 2 : 1);
-      setTimeLeft(30);
+      setTimeLeft(timeLimit);
     }
   };
+
+  const renderIconSelection = (player: Player) => (
+    <VStack spacing={4} w="100%" maxW="400px">
+      <Text textAlign="center" fontSize={isMobile ? "md" : "lg"} fontWeight="bold">
+        Player {player}, Choose Your Icon
+      </Text>
+      <HStack spacing={2} justify="center" wrap="wrap">
+        {FRUIT_ICONS.map((fruit, index) => (
+          <Tooltip key={index} label={fruit.name} placement="top">
+            <IconButton
+              aria-label={fruit.name}
+              icon={<Text fontSize="2xl">{fruit.emoji}</Text>}
+              size="lg"
+              variant={
+                (player === 1 && player1Icon === fruit.emoji) ||
+                (player === 2 && player2Icon === fruit.emoji)
+                  ? "solid"
+                  : "outline"
+              }
+              colorScheme={
+                (player === 1 && player1Icon === fruit.emoji) ||
+                (player === 2 && player2Icon === fruit.emoji)
+                  ? "blue"
+                  : "gray"
+              }
+              isDisabled={
+                (player === 1 && player2Icon === fruit.emoji) ||
+                (player === 2 && player1Icon === fruit.emoji)
+              }
+              onClick={() => {
+                if (player === 1) {
+                  setPlayer1Icon(fruit.emoji);
+                } else {
+                  setPlayer2Icon(fruit.emoji);
+                }
+              }}
+            />
+          </Tooltip>
+        ))}
+      </HStack>
+    </VStack>
+  );
 
   return (
     <ChakraProvider>
@@ -132,25 +208,116 @@ function App() {
           
           {gameState === 'SETUP' ? (
             <>
-              <Text textAlign="center" fontSize={isMobile ? "md" : "lg"}>
-                {!player1Number ? 'First Player' : 'Second Player'}, enter your 6-digit number
-              </Text>
+              {!player1Number && (
+                <VStack spacing={4} w="100%" maxW="400px">
+                  <Text textAlign="center" fontSize={isMobile ? "md" : "lg"}>
+                    Select Turn Time Limit
+                  </Text>
+                  <Select
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(Number(e.target.value))}
+                    bg="white"
+                    size={isMobile ? "md" : "lg"}
+                  >
+                    <option value={30}>30 seconds</option>
+                    <option value={60}>60 seconds</option>
+                    <option value={90}>90 seconds</option>
+                    <option value={120}>120 seconds</option>
+                  </Select>
+                  {renderIconSelection(1)}
+                  {player1Icon && (
+                    <Text textAlign="center" fontSize={isMobile ? "md" : "lg"}>
+                      First Player, enter your 6-digit number
+                    </Text>
+                  )}
+                </VStack>
+              )}
+              {player1Number && (
+                <>
+                  {renderIconSelection(2)}
+                  {player2Icon && (
+                    <Text textAlign="center" fontSize={isMobile ? "md" : "lg"}>
+                      Second Player, enter your 6-digit number
+                    </Text>
+                  )}
+                </>
+              )}
               <NumberInput 
                 onSubmit={(number) => handlePlayerNumberSubmit(!player1Number ? 1 : 2, number)} 
                 isSetup={true}
+                isDisabled={(!player1Number && !player1Icon) || (player1Number && !player2Icon)}
               />
             </>
           ) : (
             <>
               {gameResult ? (
-                <VStack spacing={4}>
+                <VStack spacing={4} w="100%" maxW="600px">
                   <Heading size={isMobile ? "md" : "lg"} color="green.500">
-                    Player {gameResult} Wins!
+                    Player {gameResult} {gameResult === 1 ? player1Icon : player2Icon} Wins!
                   </Heading>
+                  
+                  <Box w="100%" bg="white" p={6} borderRadius="lg" boxShadow="md">
+                    <VStack spacing={4} align="stretch">
+                      <Text fontSize="lg" fontWeight="bold" color="blue.600" textAlign="center">
+                        Game Summary
+                      </Text>
+                      
+                      <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                        <GridItem>
+                          <VStack align="stretch" spacing={2}>
+                            <Text fontWeight="bold" color="blue.500">
+                              Player 1 {player1Icon}
+                            </Text>
+                            <Box p={3} bg="gray.50" borderRadius="md">
+                              <Text>Secret Number: {player1Number}</Text>
+                              <Text>Total Guesses: {player1Guesses.length}</Text>
+                            </Box>
+                          </VStack>
+                        </GridItem>
+                        
+                        <GridItem>
+                          <VStack align="stretch" spacing={2}>
+                            <Text fontWeight="bold" color="green.500">
+                              Player 2 {player2Icon}
+                            </Text>
+                            <Box p={3} bg="gray.50" borderRadius="md">
+                              <Text>Secret Number: {player2Number}</Text>
+                              <Text>Total Guesses: {player2Guesses.length}</Text>
+                            </Box>
+                          </VStack>
+                        </GridItem>
+                      </Grid>
+
+                      <Box>
+                        <Text fontWeight="bold" mb={2}>Winning Move:</Text>
+                        <Box p={3} bg="green.50" borderRadius="md">
+                          {gameResult === 1 ? (
+                            <Text>
+                              Player 1 {player1Icon} correctly guessed {player2Number} in {player1Guesses.length} tries
+                            </Text>
+                          ) : (
+                            <Text>
+                              Player 2 {player2Icon} correctly guessed {player1Number} in {player2Guesses.length} tries
+                            </Text>
+                          )}
+                        </Box>
+                      </Box>
+
+                      <Box>
+                        <Text fontWeight="bold" mb={2}>Game Settings:</Text>
+                        <Box p={3} bg="blue.50" borderRadius="md">
+                          <Text>Time Limit per Turn: {timeLimit} seconds</Text>
+                          <Text>Total Game Duration: {Math.floor((Date.now() - player1Guesses[0]?.timestamp || 0) / 1000)} seconds</Text>
+                        </Box>
+                      </Box>
+                    </VStack>
+                  </Box>
+
                   <Button
                     colorScheme="blue"
                     size={isMobile ? "md" : "lg"}
                     onClick={() => setGameState('SETUP')}
+                    mt={4}
                   >
                     Play Again
                   </Button>
@@ -159,16 +326,16 @@ function App() {
                 <>
                   <VStack spacing={2} w="100%">
                     <Text textAlign="center" fontSize={isMobile ? "md" : "lg"} color="blue.600">
-                      Player {currentPlayer}'s turn to guess
+                      Player {currentPlayer} {currentPlayer === 1 ? player1Icon : player2Icon}'s turn to guess
                     </Text>
                     <Box w="100%" maxW="400px">
                       <Progress 
-                        value={timeLeft * (100/30)} 
-                        colorScheme={timeLeft <= 10 ? "red" : "blue"} 
+                        value={(timeLeft * (100/timeLimit))} 
+                        colorScheme={timeLeft <= timeLimit/3 ? "red" : "blue"} 
                         height="8px"
                         borderRadius="full"
                       />
-                      <Text textAlign="center" fontSize="sm" color={timeLeft <= 10 ? "red.500" : "gray.600"}>
+                      <Text textAlign="center" fontSize="sm" color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"}>
                         {timeLeft} seconds left
                       </Text>
                     </Box>
@@ -180,6 +347,10 @@ function App() {
                     player2Guesses={player2Guesses}
                     player1DiscoveredDigits={player1DiscoveredDigits}
                     player2DiscoveredDigits={player2DiscoveredDigits}
+                    timeLeft={timeLeft}
+                    timeLimit={timeLimit}
+                    player1Icon={player1Icon}
+                    player2Icon={player2Icon}
                   />
                 </>
               )}

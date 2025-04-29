@@ -16,6 +16,10 @@ interface GameBoardProps {
   player2Guesses: GuessHistory[];
   player1DiscoveredDigits: { [position: number]: string };
   player2DiscoveredDigits: { [position: number]: string };
+  timeLeft: number;
+  timeLimit: number;
+  player1Icon: string;
+  player2Icon: string;
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({
@@ -25,13 +29,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
   player2Guesses,
   player1DiscoveredDigits,
   player2DiscoveredDigits,
+  timeLeft,
+  timeLimit,
+  player1Icon,
+  player2Icon,
 }) => {
   const [isMobile] = useMediaQuery("(max-width: 768px)");
 
   const renderGuessHistory = (guesses: GuessHistory[], playerNumber: number) => (
     <VStack spacing={2} align="stretch" w="100%">
       <Text fontWeight="bold" color={`${playerNumber === 1 ? 'blue' : 'green'}.600`}>
-        Player {playerNumber}'s Guesses
+        Player {playerNumber} {playerNumber === 1 ? player1Icon : player2Icon}'s Guesses
       </Text>
       {guesses.map((guess, index) => (
         <Grid
@@ -77,6 +85,18 @@ const GameBoard: React.FC<GameBoardProps> = ({
           </GridItem>
         </Grid>
       ))}
+      {currentPlayer === playerNumber && (
+        <Box>
+          <NumberInput 
+            onSubmit={onGuess} 
+            isSetup={false} 
+            timeLeft={timeLeft}
+            timeLimit={timeLimit}
+            isDisabled={false}
+            isCompact={true}
+          />
+        </Box>
+      )}
     </VStack>
   );
 
@@ -86,7 +106,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         templateColumns={isMobile ? "1fr" : "repeat(2, 1fr)"}
         gap={8}
         w="100%"
-        mb={8}
       >
         <GridItem>
           {renderGuessHistory(player1Guesses, 1)}
@@ -95,11 +114,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
           {renderGuessHistory(player2Guesses, 2)}
         </GridItem>
       </Grid>
-      {currentPlayer && (
-        <Box mt={4}>
-          <NumberInput onSubmit={onGuess} isSetup={false} />
-        </Box>
-      )}
     </Box>
   );
 };

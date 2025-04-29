@@ -6,18 +6,25 @@ import {
   Text,
   Progress,
   useToast,
+  HStack,
 } from '@chakra-ui/react';
 
 interface NumberInputProps {
   onSubmit: (value: string) => void;
   isSetup?: boolean;
   timeLeft?: number;
+  timeLimit?: number;
+  isDisabled?: boolean;
+  isCompact?: boolean;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
   onSubmit,
   isSetup = false,
   timeLeft = 30,
+  timeLimit = 30,
+  isDisabled = false,
+  isCompact = false,
 }) => {
   const [value, setValue] = useState('');
   const toast = useToast();
@@ -52,18 +59,57 @@ const NumberInput: React.FC<NumberInputProps> = ({
     setValue('');
   };
 
+  if (isCompact) {
+    return (
+      <VStack as="form" onSubmit={handleSubmit} spacing={2} w="100%">
+        <Progress
+          value={(timeLeft / timeLimit) * 100}
+          w="100%"
+          colorScheme={timeLeft <= timeLimit/3 ? "red" : timeLeft <= timeLimit/2 ? "yellow" : "green"}
+          size="xs"
+          borderRadius="full"
+        />
+        <HStack w="100%" spacing={2}>
+          <Input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Enter guess"
+            maxLength={6}
+            pattern="\d*"
+            inputMode="numeric"
+            autoFocus
+            isDisabled={isDisabled}
+            size="sm"
+          />
+          <Button
+            type="submit"
+            colorScheme="blue"
+            isDisabled={isDisabled || value.length !== 6 || !/^\d+$/.test(value)}
+            size="sm"
+            flexShrink={0}
+          >
+            Submit
+          </Button>
+        </HStack>
+        <Text fontSize="xs" color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"} alignSelf="flex-end">
+          {timeLeft}s
+        </Text>
+      </VStack>
+    );
+  }
+
   return (
     <VStack as="form" onSubmit={handleSubmit} spacing={4} w="100%">
       {!isSetup && (
         <>
           <Progress
-            value={(timeLeft / 30) * 100}
+            value={(timeLeft / timeLimit) * 100}
             w="100%"
-            colorScheme={timeLeft <= 5 ? "red" : timeLeft <= 10 ? "yellow" : "green"}
+            colorScheme={timeLeft <= timeLimit/3 ? "red" : timeLeft <= timeLimit/2 ? "yellow" : "green"}
             size="sm"
             borderRadius="full"
           />
-          <Text color={timeLeft <= 5 ? "red.500" : "gray.600"} fontWeight="bold">
+          <Text color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"} fontWeight="bold">
             Time left: {timeLeft}s
           </Text>
         </>
@@ -76,11 +122,12 @@ const NumberInput: React.FC<NumberInputProps> = ({
         pattern="\d*"
         inputMode="numeric"
         autoFocus
+        isDisabled={isDisabled}
       />
       <Button
         type="submit"
         colorScheme="blue"
-        isDisabled={value.length !== 6 || !/^\d+$/.test(value)}
+        isDisabled={isDisabled || value.length !== 6 || !/^\d+$/.test(value)}
         w="100%"
       >
         {isSetup ? "Start Game" : "Submit Guess"}
