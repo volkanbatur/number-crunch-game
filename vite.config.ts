@@ -5,4 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/number-crunch/',
+  server: {
+    port: 3000,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
 }) 
