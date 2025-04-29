@@ -1,79 +1,62 @@
-# Number Crunch - Version 2
+# Number Crunch
 
-This is the second version of Number Crunch, a two-player number guessing game with enhanced UI features. Players can select their fruit icons and enjoy a more compact, intuitive layout.
-
-## Game Rules
-
-1. Each player chooses a fruit icon and a secret 6-digit number with unique digits
-2. Players take turns trying to guess each other's number
-3. After each guess, the player receives feedback:
-   - '+' for each digit in the correct position
-   - '-' for each correct digit in the wrong position
-4. Players have a customizable time limit per turn (30, 60, 90, or 120 seconds)
-5. If time runs out, a default guess is submitted
-6. The first player to correctly guess their opponent's number (getting '++++++') wins
+A two-player number guessing game built with React, TypeScript, and Chakra UI.
 
 ## Features
 
-- Clean, modern UI built with React and Chakra UI
-- Player identification with fun fruit icons (🍎 🍌 🍇 🍊 🍓)
-- Customizable timer with visual feedback
-- Compact, player-specific input areas
-- Input validation for 6-digit unique numbers
-- Color-coded feedback for discovered digits
-- Responsive design for both desktop and mobile
-- Auto-submit when timer runs out
-- Detailed game summary with statistics
-
-## Technical Stack
-
-- React 18
-- TypeScript
-- Chakra UI
-- Vite
+- 🎮 Two-player gameplay
+- ⏱️ Configurable time limits
+- 🎯 Real-time feedback on guesses
+- 🎨 Player icons and customization
+- 🎉 Victory animations
+- 🔊 Sound effects
 
 ## Getting Started
 
-1. Clone the repository
+### Prerequisites
+
+- Node.js (v20.0.0 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/number-crunch.git
+cd number-crunch
+```
+
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+# or
+yarn install
+```
+
 3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser and navigate to `http://localhost:5173`
+```bash
+npm run dev
+# or
+yarn dev
+```
 
 ## How to Play
 
-1. First player selects their fruit icon
-2. First player enters their secret 6-digit number
-3. Second player selects their fruit icon (different from first player)
-4. Second player enters their secret 6-digit number
-5. Game begins with Player 1's turn
-6. Each player has the selected time limit to make a guess
-7. Game continues until one player correctly guesses the opponent's number
+1. Each player chooses their icon and enters a 6-digit secret number
+2. Players take turns guessing each other's number
+3. After each guess, players receive feedback:
+   - '+' indicates a correct digit in the correct position
+   - '-' indicates a correct digit in the wrong position
+4. The first player to correctly guess their opponent's number wins!
 
-## Version History
+## Built With
 
-### Version 2 (Current)
-- Added player fruit icons for better identification
-- Implemented customizable time limits (30/60/90/120 seconds)
-- Redesigned input area to be more compact and player-specific
-- Enhanced game summary with player icons and statistics
-- Improved visual feedback for timer states
+- React
+- TypeScript
+- Chakra UI
+- Vite
+- Electron (for desktop version)
 
-### Version 1
-- Basic two-player gameplay
-- Fixed 30-second timer
-- Simple input validation
-- Basic game summary
+## License
 
-## Future Improvements
-
-- Add sound effects for timer and guesses
-- Implement a score tracking system
-- Add animation effects for correct/incorrect guesses
-- Add a practice mode against AI
-- Add online multiplayer support 
+This project is licensed under the MIT License - see the LICENSE file for details. 

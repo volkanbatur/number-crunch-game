@@ -1,62 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Input,
   Button,
   VStack,
   Text,
   Progress,
-  useToast,
   HStack,
 } from '@chakra-ui/react';
 
 interface NumberInputProps {
   onSubmit: (value: string) => void;
-  isSetup?: boolean;
-  timeLeft?: number;
-  timeLimit?: number;
   isDisabled?: boolean;
   isCompact?: boolean;
+  timeLeft: number;
+  timeLimit: number;
 }
 
-const NumberInput: React.FC<NumberInputProps> = ({
-  onSubmit,
-  isSetup = false,
-  timeLeft = 30,
-  timeLimit = 30,
-  isDisabled = false,
-  isCompact = false,
-}) => {
+export function NumberInput({ onSubmit, isDisabled = false, isCompact = false, timeLeft, timeLimit }: NumberInputProps) {
   const [value, setValue] = useState('');
-  const toast = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (value.length !== 6 || !/^\d+$/.test(value)) {
-      toast({
-        title: 'Invalid input',
-        description: 'Please enter exactly 6 digits',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
+    if (value && !isDisabled) {
+      onSubmit(value);
+      setValue('');
     }
-
-    // Check for duplicate digits
-    if (new Set(value.split('')).size !== 6) {
-      toast({
-        title: 'Invalid input',
-        description: 'All digits must be different',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    onSubmit(value);
-    setValue('');
   };
 
   if (isCompact) {
@@ -64,34 +32,36 @@ const NumberInput: React.FC<NumberInputProps> = ({
       <VStack as="form" onSubmit={handleSubmit} spacing={2} w="100%">
         <Progress
           value={(timeLeft / timeLimit) * 100}
-          w="100%"
-          colorScheme={timeLeft <= timeLimit/3 ? "red" : timeLeft <= timeLimit/2 ? "yellow" : "green"}
           size="xs"
+          colorScheme={timeLeft <= timeLimit/3 ? "red" : "blue"}
+          w="100%"
           borderRadius="full"
         />
         <HStack w="100%" spacing={2}>
           <Input
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter guess"
-            maxLength={6}
-            pattern="\d*"
-            inputMode="numeric"
-            autoFocus
+            placeholder="Enter number..."
+            type="number"
             isDisabled={isDisabled}
+            bg="white"
             size="sm"
           />
           <Button
             type="submit"
             colorScheme="blue"
-            isDisabled={isDisabled || value.length !== 6 || !/^\d+$/.test(value)}
+            isDisabled={!value || isDisabled}
             size="sm"
             flexShrink={0}
           >
             Submit
           </Button>
         </HStack>
-        <Text fontSize="xs" color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"} alignSelf="flex-end">
+        <Text 
+          fontSize="xs" 
+          color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"} 
+          alignSelf="flex-end"
+        >
           {timeLeft}s
         </Text>
       </VStack>
@@ -100,13 +70,12 @@ const NumberInput: React.FC<NumberInputProps> = ({
 
   return (
     <VStack as="form" onSubmit={handleSubmit} spacing={4} w="100%">
-      {!isSetup && (
+      {timeLimit > 0 && (
         <>
           <Progress
             value={(timeLeft / timeLimit) * 100}
+            colorScheme={timeLeft <= timeLimit/3 ? "red" : "blue"}
             w="100%"
-            colorScheme={timeLeft <= timeLimit/3 ? "red" : timeLeft <= timeLimit/2 ? "yellow" : "green"}
-            size="sm"
             borderRadius="full"
           />
           <Text color={timeLeft <= timeLimit/3 ? "red.500" : "gray.600"} fontWeight="bold">
@@ -117,23 +86,20 @@ const NumberInput: React.FC<NumberInputProps> = ({
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={isSetup ? "Enter target number" : "Enter your guess"}
-        maxLength={6}
-        pattern="\d*"
-        inputMode="numeric"
-        autoFocus
+        placeholder="Enter your guess..."
+        type="number"
+        size="lg"
+        bg="white"
         isDisabled={isDisabled}
       />
       <Button
         type="submit"
         colorScheme="blue"
-        isDisabled={isDisabled || value.length !== 6 || !/^\d+$/.test(value)}
+        isDisabled={!value || isDisabled}
         w="100%"
       >
-        {isSetup ? "Start Game" : "Submit Guess"}
+        Submit Guess
       </Button>
     </VStack>
   );
-};
-
-export default NumberInput; 
+} 

@@ -1,29 +1,15 @@
 import React from 'react';
 import { Box, VStack, Grid, Text, useToast, Flex } from '@chakra-ui/react';
-import NumberInput from './NumberInput';
+import { NumberInput } from './NumberInput';
 import { motion, AnimatePresence } from "framer-motion";
 import useSound from 'use-sound';
+import { GameBoardProps } from '../types';
 
 interface GuessData {
   guess: string;
   result: string;
   positions: boolean[];
   timestamp: number;
-}
-
-interface GameBoardProps {
-  player1Guesses: GuessData[];
-  player2Guesses: GuessData[];
-  currentPlayer: 1 | 2;
-  onGuess: (guess: string) => void;
-  player1Icon: string;
-  player2Icon: string;
-  player1Name: string;
-  player2Name: string;
-  player1DiscoveredDigits: string[];
-  player2DiscoveredDigits: string[];
-  timeLeft: number;
-  timeLimit: number;
 }
 
 // Import sound effects
